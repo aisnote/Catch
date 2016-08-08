@@ -57,6 +57,49 @@ TEST_CASE("Factorials are computed", "[factorial]") {
 	REQUIRE(Factorial(10) == 3628800);
 }
 
+TEST_CASE("vectors can be sized and resized-only for section", "[vector-section]") {
+
+	std::vector<int> v(5);
+
+	REQUIRE(v.size() == 5);
+	REQUIRE(v.capacity() >= 5);
+
+	// like stack, work flow is like: test_case=>section1.
+	// then back to test_case=>section2. like stack.
+	// this is avoid setup() and teardown() on gTest()
+	// section1
+	SECTION("resizing bigger changes size and capacity") {
+		v.resize(10);
+
+		REQUIRE(v.size() == 10);
+		REQUIRE(v.capacity() >= 10);
+
+		SECTION("deaklock test") {
+			v.reserve(7);
+			REQUIRE(v.size() == 10);
+
+			SECTION("nested") {
+				v.reserve(5);
+				REQUIRE(v.capacity() >= 5);
+			}
+		}
+
+		SECTION("deaklock test") {
+			v.reserve(7);
+			REQUIRE(v.size() == 10);
+
+			SECTION("nested") {
+				v.reserve(5);
+				REQUIRE(v.capacity() >= 5);
+			}
+		}
+
+		v.resize(10);
+	}
+
+	v.resize(5);
+}
+
 TEST_CASE("vectors can be sized and resized", "[vector]") {
 
 	std::vector<int> v(5);
@@ -94,6 +137,8 @@ TEST_CASE("vectors can be sized and resized", "[vector]") {
 
 			REQUIRE(v.capacity() >= 10);
 		}
+
+		REQUIRE(v.capacity() >= 10);
 	}
 
 	SECTION("reserving smaller does not change size or capacity") {
